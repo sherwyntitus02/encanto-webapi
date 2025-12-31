@@ -24,7 +24,7 @@ builder.Services.AddCors(options =>
                 var uri = new Uri(origin);
                 return uri.Host == "localhost"
                        || uri.Host == "127.0.0.1"
-                       || origin == "https://red-mushroom-0c80b7710.1.azurestaticapps.net";
+                       || origin == "https://delightful-wave-0f9aba300.4.azurestaticapps.net";
             })
             .AllowAnyHeader()
             .AllowAnyMethod()
