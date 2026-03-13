@@ -1,12 +1,37 @@
+using EncantoWebAPI.Config;
 using EncantoWebAPI.Hubs;
+using EncantoWebAPI.Services;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
+using MongoDB.Driver;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Read from appsettings.json
-string mongoConnection = builder.Configuration["MongoDBSettings:ConnectionURI"]!;
-string mongoDbName = builder.Configuration["MongoDbSettings:DatabaseName"]!;
-string sessionsCollectionName = builder.Configuration["MongoDBSettings:SessionsCollectionName"]!;
+// Configure MongoDB Settings
+var mongoDbSettings = new MongoDbSettings
+{
+    ConnectionString = builder.Configuration["MongoDbConnectionString"] 
+        ?? throw new InvalidOperationException("MongoDB connection string 'MongoDbConnectionString' not found. Ensure it's configured as an environment variable in Azure App Service or in appsettings.json for local development."),
+    DatabaseName = builder.Configuration["MongoDbSettings:DatabaseName"] 
+        ?? throw new InvalidOperationException("MongoDB database name not found in configuration.")
+};
+
+// Register MongoDB Services
+builder.Services.Configure<MongoDbSettings>(options =>
+{
+    options.ConnectionString = mongoDbSettings.ConnectionString;
+    options.DatabaseName = mongoDbSettings.DatabaseName;
+});
+
+// Register MongoClient as Singleton
+builder.Services.AddSingleton<MongoClient>(new MongoClient(mongoDbSettings.ConnectionString));
+
+// Register MongoDbService as Singleton
+builder.Services.AddSingleton<MongoDbService>(provider =>
+{
+    var mongoClient = provider.GetRequiredService<MongoClient>();
+    return new MongoDbService(mongoClient, mongoDbSettings.DatabaseName);
+});
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -72,11 +97,14 @@ app.UseHttpsRedirection();
 
 app.UseCors("AllowFrontend"); // Enables CORS (before authorization & controllers)
 
+// Get MongoDB settings from DI container for middleware
+var mongoDbSettingsForMiddleware = app.Services.GetRequiredService<IOptions<MongoDbSettings>>().Value;
+
 // Adds session validation middleware BEFORE controllers
 app.UseMiddleware<EncantoWebAPI.Middlewares.SessionValidationMiddleware>(
-    mongoConnection,
-    mongoDbName,
-    sessionsCollectionName
+    mongoDbSettingsForMiddleware.ConnectionString,
+    mongoDbSettingsForMiddleware.DatabaseName,
+    builder.Configuration["MongoDBSettings:SessionsCollectionName"]!
 );
 
 app.UseAuthorization();
