@@ -1,5 +1,7 @@
+using EncantoWebAPI.Accessors;
 using EncantoWebAPI.Config;
 using EncantoWebAPI.Hubs;
+using EncantoWebAPI.Managers;
 using EncantoWebAPI.Services;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
@@ -11,7 +13,7 @@ var builder = WebApplication.CreateBuilder(args);
 var mongoDbSettings = new MongoDbSettings
 {
     ConnectionString = builder.Configuration["MongoDbConnectionString"] 
-        ?? throw new InvalidOperationException("MongoDB connection string 'MongoDbConnectionString' not found. Ensure it's configured as an environment variable in Azure App Service or in appsettings.json for local development."),
+        ?? throw new InvalidOperationException("MongoDB connection string 'MongoDbConnectionString' not found."),
     DatabaseName = builder.Configuration["MongoDbSettings:DatabaseName"] 
         ?? throw new InvalidOperationException("MongoDB database name not found in configuration.")
 };
@@ -24,7 +26,14 @@ builder.Services.Configure<MongoDbSettings>(options =>
 });
 
 // Register MongoClient as Singleton
-builder.Services.AddSingleton<MongoClient>(new MongoClient(mongoDbSettings.ConnectionString));
+builder.Services.AddSingleton<MongoClient>(sp =>
+{
+    var settings = MongoClientSettings.FromConnectionString(mongoDbSettings.ConnectionString);
+    settings.ServerSelectionTimeout = TimeSpan.FromSeconds(30);
+    settings.ConnectTimeout = TimeSpan.FromSeconds(30);
+    settings.SocketTimeout = TimeSpan.FromSeconds(30);
+    return new MongoClient(settings);
+});
 
 // Register MongoDbService as Singleton
 builder.Services.AddSingleton<MongoDbService>(provider =>
@@ -32,6 +41,17 @@ builder.Services.AddSingleton<MongoDbService>(provider =>
     var mongoClient = provider.GetRequiredService<MongoClient>();
     return new MongoDbService(mongoClient, mongoDbSettings.DatabaseName);
 });
+
+// Register Data Accessors with Dependency Injection
+builder.Services.AddScoped<MongoDBAccessor>();
+builder.Services.AddScoped<AuthenticationAccessor>();
+builder.Services.AddScoped<UserDetailsAccessor>();
+builder.Services.AddScoped<EventDetailsAccessor>();
+
+// Register Business Logic Managers with Dependency Injection
+builder.Services.AddScoped<AuthenticationManager>();
+builder.Services.AddScoped<UserDetailsManager>();
+builder.Services.AddScoped<EventDetailsManager>();
 
 // Add services to the container.
 builder.Services.AddControllers();

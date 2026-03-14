@@ -2,8 +2,14 @@ namespace EncantoWebAPI.Config
 {
     /// <summary>
     /// MongoDB configuration settings.
-    /// The ConnectionString is automatically injected from Azure Key Vault via GetConnectionString("DefaultConnection").
-    /// The DatabaseName is read from appsettings.json.
+    /// 
+    /// Configuration Sources:
+    /// - Local Development: Read from User Secrets (secrets.json)
+    /// - Azure Deployment: Read from Environment Variables
+    /// 
+    /// Sensitive data (ConnectionString) is stored in:
+    /// - secrets.json for local development
+    /// - Environment variables in Azure App Service for production
     /// </summary>
     public class MongoDbSettings
     {

@@ -7,12 +7,17 @@ namespace EncantoWebAPI.Controllers
     [ApiController]
     public class UtilitiesController : ControllerBase
     {
+        private readonly MongoDBAccessor _mongoDBAccessor;
+
+        public UtilitiesController(MongoDBAccessor mongoDBAccessor)
+        {
+            _mongoDBAccessor = mongoDBAccessor;
+        }
 
         [HttpGet("test-db-connection")]
         public ActionResult TestDatabase()
         {
-            var mongo = new MongoDBAccessor();
-            return mongo.TestConnection() ? Ok("✅ Connected to MongoDB!") : StatusCode(500, "❌ MongoDB connection failed.");
+            return _mongoDBAccessor.TestConnection() ? Ok("✅ Connected to MongoDB!") : StatusCode(500, "❌ MongoDB connection failed.");
         }
 
     }

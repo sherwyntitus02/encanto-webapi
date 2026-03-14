@@ -2,26 +2,35 @@
 using EncantoWebAPI.Models.Auth;
 using EncantoWebAPI.Models.Events;
 using EncantoWebAPI.Models.Profiles;
+using EncantoWebAPI.Services;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace EncantoWebAPI.Accessors
 {
+    /// <summary>
+    /// MongoDB accessor for data access operations.
+    /// This class is deprecated. Use MongoDbService with dependency injection instead.
+    /// </summary>
+    [Obsolete("Use MongoDbService with dependency injection instead.")]
     public class MongoDBAccessor
     {
         private readonly IMongoDatabase _database;
         private readonly MongoDBSettings _settings;
 
-        public MongoDBAccessor()
+        public MongoDBAccessor(MongoDbService mongoDbService, IConfiguration configuration)
         {
-            var config = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json")
-                .Build();
+            _settings = configuration.GetSection("MongoDBSettings").Get<MongoDBSettings>();
+            if (_settings == null)
+            {
+                throw new InvalidOperationException("MongoDBSettings configuration not found.");
+            }
 
-            _settings = config.GetSection("MongoDBSettings").Get<MongoDBSettings>();
-
-            var client = new MongoClient(_settings.ConnectionURI);
-            _database = client.GetDatabase(_settings.DatabaseName);
+            // Use MongoDbService to get the database
+            _database = mongoDbService.GetType()
+                .GetProperty("Database", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                ?.GetValue(mongoDbService) as IMongoDatabase
+                ?? throw new InvalidOperationException("Unable to retrieve MongoDB database from MongoDbService.");
         }
 
         // Collections

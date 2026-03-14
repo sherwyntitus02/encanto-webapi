@@ -23,9 +23,13 @@ namespace EncantoWebAPI.Middlewares
 
         public async Task InvokeAsync(HttpContext context)
         {
-            // Skip validation for login/signup/logout/dbConnectionTest
+            // Skip validation for health checks and auth endpoints
             var path = context.Request.Path.Value?.ToLower();
-            if (path != null && (path.Contains("/auth/login") || path.Contains("/auth/signup") || path.Contains("/test-db-connection") || path.Contains("/swagger") ))
+            if (path != null && (path.Contains("/auth/login") 
+                || path.Contains("/auth/signup") 
+                || path.Contains("/test-db-connection") 
+                || path.Contains("/swagger")
+                || path.Contains("/api/mongodbhealth/health")))
             {
                 await _next(context);
                 return;

@@ -6,12 +6,17 @@ namespace EncantoWebAPI.Managers
 {
     public class UserDetailsManager
     {
+        private readonly UserDetailsAccessor _userDetailsAccessor;
+
+        public UserDetailsManager(UserDetailsAccessor userDetailsAccessor)
+        {
+            _userDetailsAccessor = userDetailsAccessor;
+        }
 
         #region Profile Details
         public async Task<UserProfile> GetProfileDetailsFromUserId(string UserId)
         {
-            var userDetailsAccessor = new UserDetailsAccessor();
-            var profileDetails = await userDetailsAccessor.GetProfileDetails(UserId);
+            var profileDetails = await _userDetailsAccessor.GetProfileDetails(UserId);
 
             if (profileDetails == null)
             {
@@ -20,12 +25,12 @@ namespace EncantoWebAPI.Managers
 
             if (!string.IsNullOrWhiteSpace(profileDetails.AddressId))
             {
-                profileDetails.Address = await userDetailsAccessor.GetAddressDetails(profileDetails.AddressId);
+                profileDetails.Address = await _userDetailsAccessor.GetAddressDetails(profileDetails.AddressId);
             }
 
             if (!string.IsNullOrWhiteSpace(profileDetails.OccupationId))
             {
-                profileDetails.OccupationDetails = await userDetailsAccessor.GetOccupationDetails(profileDetails.OccupationId);
+                profileDetails.OccupationDetails = await _userDetailsAccessor.GetOccupationDetails(profileDetails.OccupationId);
             }
 
             return profileDetails;
@@ -33,8 +38,7 @@ namespace EncantoWebAPI.Managers
 
         public async Task<UserProfile> GetProfileDetailsForEventCreationFromUserId(string UserId)
         {
-            var userDetailsAccessor = new UserDetailsAccessor();
-            var profileDetails = await userDetailsAccessor.GetProfileDetails(UserId);
+            var profileDetails = await _userDetailsAccessor.GetProfileDetails(UserId);
 
             if (profileDetails == null)
             {
@@ -46,8 +50,7 @@ namespace EncantoWebAPI.Managers
 
         public async Task<string> GetUserIdFromSessionDetails(string sessionKey)
         {
-            var userDetailsAccessor = new UserDetailsAccessor();
-            var sessionDetails = await userDetailsAccessor.GetSessionDetails(sessionKey);
+            var sessionDetails = await _userDetailsAccessor.GetSessionDetails(sessionKey);
             if (sessionDetails == null)
             {
                 throw new InvalidOperationException($"Session not found.");
@@ -57,26 +60,22 @@ namespace EncantoWebAPI.Managers
 
         public async Task UpdateProfileName(UserNameUpdateRequest userNameUpdateRequest)
         {
-            var userDetailsAccessor = new UserDetailsAccessor();
-            await userDetailsAccessor.UpdateProfileName(userNameUpdateRequest);
+            await _userDetailsAccessor.UpdateProfileName(userNameUpdateRequest);
         }
 
         public async Task UpdateProfilePhn(UserPhnUpdateRequest userPhnUpdateRequest)
         {
-            var userDetailsAccessor = new UserDetailsAccessor();
-            await userDetailsAccessor.UpdateProfilePhn(userPhnUpdateRequest);
+            await _userDetailsAccessor.UpdateProfilePhn(userPhnUpdateRequest);
         }
 
         public async Task UpdateProfileGender(UserGenderUpdateRequest userGenderUpdateRequest)
         {
-            var userDetailsAccessor = new UserDetailsAccessor();
-            await userDetailsAccessor.UpdateProfileGender(userGenderUpdateRequest);
+            await _userDetailsAccessor.UpdateProfileGender(userGenderUpdateRequest);
         }
 
         public async Task UpdateProfileBirthday(UserBirthdayUpdateRequest userBirthdayUpdateRequest)
         {
-            var userDetailsAccessor = new UserDetailsAccessor();
-            await userDetailsAccessor.UpdateProfileBirthday(userBirthdayUpdateRequest);
+            await _userDetailsAccessor.UpdateProfileBirthday(userBirthdayUpdateRequest);
         }
 
         #endregion
@@ -85,17 +84,16 @@ namespace EncantoWebAPI.Managers
 
         public async Task UpdateProfileAddress(UserAddressUpdateRequest userAddressUpdateRequest, string? occupationId = null)
         {
-            var userDetailsAccessor = new UserDetailsAccessor();
             var doesAddressExist = false;
 
             if (!string.IsNullOrWhiteSpace(userAddressUpdateRequest.AddressId))
             {
-                doesAddressExist = await userDetailsAccessor.CheckIfAddressExist(userAddressUpdateRequest.AddressId);
+                doesAddressExist = await _userDetailsAccessor.CheckIfAddressExist(userAddressUpdateRequest.AddressId);
             }
-            
+
             if (doesAddressExist)
             {
-                await userDetailsAccessor.UpdateProfileAddress(userAddressUpdateRequest);
+                await _userDetailsAccessor.UpdateProfileAddress(userAddressUpdateRequest);
             }
             else
             {
@@ -115,7 +113,7 @@ namespace EncantoWebAPI.Managers
                     CreatedTimestamp = userAddressUpdateRequest.UpdatedTimestamp
                 };
 
-                await userDetailsAccessor.CreateProfileAddress(userAddressDetails, occupationId ?? userAddressUpdateRequest.UserId);
+                await _userDetailsAccessor.CreateProfileAddress(userAddressDetails, occupationId ?? userAddressUpdateRequest.UserId);
 
             }
         }
@@ -132,17 +130,16 @@ namespace EncantoWebAPI.Managers
 
         public async Task UpdateProfileOccupation(UserOccupationUpdateRequest userOccupationUpdateRequest)
         {
-            var userDetailsAccessor = new UserDetailsAccessor();
             var doesOccupationExist = false;
 
             if (!string.IsNullOrWhiteSpace(userOccupationUpdateRequest.OccupationId))
             {
-                doesOccupationExist = await userDetailsAccessor.CheckIfOccupationExist(userOccupationUpdateRequest.OccupationId);
+                doesOccupationExist = await _userDetailsAccessor.CheckIfOccupationExist(userOccupationUpdateRequest.OccupationId);
             }
 
             if (doesOccupationExist)
             {
-                await userDetailsAccessor.UpdateProfileOccupationDetails(userOccupationUpdateRequest);
+                await _userDetailsAccessor.UpdateProfileOccupationDetails(userOccupationUpdateRequest);
             }
             else
             {
@@ -162,14 +159,13 @@ namespace EncantoWebAPI.Managers
                     UpdatedTimestamp = userOccupationUpdateRequest.UpdatedTimestamp
                 };
 
-                await userDetailsAccessor.CreateProfileOccupationDetails(userOccupationDetails, userOccupationUpdateRequest.UserId);
+                await _userDetailsAccessor.CreateProfileOccupationDetails(userOccupationDetails, userOccupationUpdateRequest.UserId);
             }
         }
 
         public async Task<string> JobLocationHandler(UserAddressUpdateRequest jobLocationRequest, string occupationId)
         {
             //since Occupation Does not exists, we create a new record in addresses collection, and return the 'addressId' to store in OccupationDetails Collection in DB
-            var userDetailsAccessor = new UserDetailsAccessor();
             string addressId = GenerateAddressId(jobLocationRequest.AddressType, jobLocationRequest.UserId, jobLocationRequest.UpdatedTimestamp);
 
             Address userAddressDetails = new()
@@ -186,7 +182,7 @@ namespace EncantoWebAPI.Managers
                 CreatedTimestamp = jobLocationRequest.UpdatedTimestamp
             };
 
-            await userDetailsAccessor.CreateProfileAddress(userAddressDetails);
+            await _userDetailsAccessor.CreateProfileAddress(userAddressDetails);
 
             return addressId;
         }

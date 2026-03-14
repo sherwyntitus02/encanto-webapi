@@ -1,12 +1,13 @@
+using EncantoWebAPI.Config;
 using EncantoWebAPI.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 
 namespace EncantoWebAPI.Controllers
 {
     /// <summary>
-    /// Example controller demonstrating how to inject and use MongoDbService.
-    /// This controller provides basic CRUD operations for any MongoDB collection.
+    /// Health check controller for MongoDB connection verification.
     /// </summary>
     [ApiController]
     [Route("api/[controller]")]
@@ -14,11 +15,13 @@ namespace EncantoWebAPI.Controllers
     {
         private readonly MongoDbService _mongoDbService;
         private readonly ILogger<MongoDbHealthController> _logger;
+        private readonly IOptions<MongoDbSettings> _mongoDbSettings;
 
-        public MongoDbHealthController(MongoDbService mongoDbService, ILogger<MongoDbHealthController> logger)
+        public MongoDbHealthController(MongoDbService mongoDbService, ILogger<MongoDbHealthController> logger, IOptions<MongoDbSettings> mongoDbSettings)
         {
             _mongoDbService = mongoDbService;
             _logger = logger;
+            _mongoDbSettings = mongoDbSettings;
         }
 
         /// <summary>
@@ -30,16 +33,26 @@ namespace EncantoWebAPI.Controllers
         {
             try
             {
-                bool isConnected = _mongoDbService.TestConnection();
-                if (isConnected)
+                var databaseName = _mongoDbSettings.Value.DatabaseName;
+
+                if (_mongoDbService.TestConnection())
                 {
-                    return Ok(new { status = "MongoDB connection is healthy", timestamp = DateTime.UtcNow });
+                    return Ok(new 
+                    { 
+                        status = "MongoDB connection is healthy", 
+                        timestamp = DateTime.UtcNow,
+                        database = databaseName
+                    });
                 }
                 else
                 {
-                    _logger.LogError("MongoDB connection test failed");
+                    _logger.LogError("MongoDB connection test failed.");
                     return StatusCode(StatusCodes.Status503ServiceUnavailable, 
-                        new { status = "MongoDB connection failed" });
+                        new 
+                        { 
+                            status = "MongoDB connection failed",
+                            message = "Unable to connect to MongoDB. Check connection settings and server availability."
+                        });
                 }
             }
             catch (Exception ex)

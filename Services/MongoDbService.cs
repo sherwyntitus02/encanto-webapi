@@ -16,6 +16,12 @@ namespace EncantoWebAPI.Services
         }
 
         /// <summary>
+        /// Internal property to access the MongoDB database.
+        /// Used by legacy accessors during migration.
+        /// </summary>
+        internal IMongoDatabase Database => _database;
+
+        /// <summary>
         /// Gets a MongoDB collection for the specified type and collection name.
         /// </summary>
         /// <typeparam name="T">The document type.</typeparam>

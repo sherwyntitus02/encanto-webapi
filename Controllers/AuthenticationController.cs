@@ -1,4 +1,5 @@
-﻿using EncantoWebAPI.Models.Auth;
+﻿using EncantoWebAPI.Managers;
+using EncantoWebAPI.Models.Auth;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EncantoWebAPI.Controllers
@@ -7,13 +8,19 @@ namespace EncantoWebAPI.Controllers
     [ApiController]
     public class AuthenticationController : ControllerBase
     {
+        private readonly AuthenticationManager _authenticationManager;
+
+        public AuthenticationController(AuthenticationManager authenticationManager)
+        {
+            _authenticationManager = authenticationManager;
+        }
+
         [HttpPost("auth/signup")]
         public async Task<ActionResult> CreateProfile([FromBody] SignupRequest signupRequest)
         {
-            var authenticationManager = new Managers.AuthenticationManager();
             try
             {
-                await authenticationManager.CreateNewUser(signupRequest);
+                await _authenticationManager.CreateNewUser(signupRequest);
                 return Ok("Profile created successfully.");
             }
             catch (Exception ex)
@@ -25,13 +32,12 @@ namespace EncantoWebAPI.Controllers
         [HttpPost("auth/login")]
         public async Task<ActionResult> LoginUser([FromBody] LoginRequest loginRequest)
         {
-            var authenticationManager = new Managers.AuthenticationManager();
             try
             {
-                var userId = await authenticationManager.LoginExistingUser(loginRequest);
-                var sessionKey = authenticationManager.GenerateSessionKey(userId);
+                var userId = await _authenticationManager.LoginExistingUser(loginRequest);
+                var sessionKey = _authenticationManager.GenerateSessionKey(userId);
 
-                await authenticationManager.StoreSessionKey(userId, sessionKey);
+                await _authenticationManager.StoreSessionKey(userId, sessionKey);
 
                 return Ok(new { sessionKey });
             }
@@ -44,8 +50,6 @@ namespace EncantoWebAPI.Controllers
         [HttpPost("auth/logout")]
         public async Task<ActionResult> LogoutUser()
         {
-            var authenticationManager = new Managers.AuthenticationManager();
-
             // Retrieve session key from context (middleware)
             var sessionKey = HttpContext.Items["SessionKey"] as string;
 
@@ -53,7 +57,7 @@ namespace EncantoWebAPI.Controllers
             {
                 try
                 {
-                    await authenticationManager.DeleteSessionKey(sessionKey);
+                    await _authenticationManager.DeleteSessionKey(sessionKey);
                     return Ok("Logged out successfully.");
                 }
                 catch (Exception ex)

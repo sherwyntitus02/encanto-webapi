@@ -1,5 +1,4 @@
-﻿using EncantoWebAPI.Managers;
-using EncantoWebAPI.Models.Auth;
+﻿using EncantoWebAPI.Models.Auth;
 using EncantoWebAPI.Models.Profiles;
 using EncantoWebAPI.Models.Profiles.Requests;
 using MongoDB.Driver;
@@ -9,9 +8,10 @@ namespace EncantoWebAPI.Accessors
     public class UserDetailsAccessor
     {
         private readonly MongoDBAccessor _db;
-        public UserDetailsAccessor()
+
+        public UserDetailsAccessor(MongoDBAccessor db)
         {
-            _db = new MongoDBAccessor();
+            _db = db;
         }
 
         #region Profile Details
@@ -265,8 +265,7 @@ namespace EncantoWebAPI.Accessors
             // Update work address separately if provided
             if (userOccupationUpdateRequest.JobLocation != null)
             {
-                var userDetailsManager = new UserDetailsManager();
-                await userDetailsManager.UpdateProfileAddress(userOccupationUpdateRequest.JobLocation, userOccupationUpdateRequest.OccupationId);
+                await UpdateProfileAddress(userOccupationUpdateRequest.JobLocation);
 
                 updates.Add(Builders<OccupationDetails>.Update.Set(u => u.UpdatedTimestamp, userOccupationUpdateRequest.JobLocation.UpdatedTimestamp));
             }

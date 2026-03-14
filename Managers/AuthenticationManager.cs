@@ -9,13 +9,18 @@ namespace EncantoWebAPI.Managers
 {
     public class AuthenticationManager
     {
+        private readonly AuthenticationAccessor _authenticationAccessor;
+
+        public AuthenticationManager(AuthenticationAccessor authenticationAccessor)
+        {
+            _authenticationAccessor = authenticationAccessor;
+        }
 
         #region Signup
 
         public async Task CreateNewUser(SignupRequest signupRequest)
         {
-            var authenticationAccessor = new AuthenticationAccessor();
-            var isEmailExisting = await authenticationAccessor.CheckIfEmailExists(signupRequest.Email);
+            var isEmailExisting = await _authenticationAccessor.CheckIfEmailExists(signupRequest.Email);
 
             if (isEmailExisting) //if email already exists
             {
@@ -23,10 +28,10 @@ namespace EncantoWebAPI.Managers
             }
 
             var loginCredential = GenerateLoginCredential(signupRequest);
-            await authenticationAccessor.CreateNewLoginCredential(loginCredential);
+            await _authenticationAccessor.CreateNewLoginCredential(loginCredential);
 
             var userProfile = GenerateUserProfile(signupRequest);
-            await authenticationAccessor.CreateNewUser(userProfile);
+            await _authenticationAccessor.CreateNewUser(userProfile);
 
         }
 
@@ -124,8 +129,7 @@ namespace EncantoWebAPI.Managers
         #region Login/Logout
         public async Task<string> LoginExistingUser(LoginRequest loginRequest)
         {
-            var authenticationAccessor = new AuthenticationAccessor();
-            var userId = await authenticationAccessor.LoginExistingUser(loginRequest);
+            var userId = await _authenticationAccessor.LoginExistingUser(loginRequest);
 
             if (userId != null)
             {
@@ -164,15 +168,13 @@ namespace EncantoWebAPI.Managers
                 ExpirationTimestamp = new DateTimeOffset(sessionExpiry).ToUnixTimeMilliseconds()
             };
 
-            var authenticationAccessor = new AuthenticationAccessor();
-            await authenticationAccessor.StoreSessionKey(sessionDetails);
+            await _authenticationAccessor.StoreSessionKey(sessionDetails);
 
         }
 
         public async Task DeleteSessionKey(string sessionKey)
         {
-            var authenticationAccessor = new AuthenticationAccessor();
-            await authenticationAccessor.DeleteSessionKey(sessionKey);
+            await _authenticationAccessor.DeleteSessionKey(sessionKey);
         }
 
         #endregion
