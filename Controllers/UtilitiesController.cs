@@ -12,7 +12,12 @@ namespace EncantoWebAPI.Controllers
         public ActionResult TestDatabase()
         {
             var mongo = new MongoDBAccessor();
-            return mongo.TestConnection() ? Ok("✅ Connected to MongoDB!") : StatusCode(500, "❌ MongoDB connection failed.");
+            if (mongo.TestConnection())
+            {
+                var connectionInfo = mongo.GetConnectionInfo();
+                return Ok($"✅ Connected to MongoDB!\n{connectionInfo}");
+            }
+            return StatusCode(500, "❌ MongoDB connection failed.");
         }
 
     }

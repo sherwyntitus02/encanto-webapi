@@ -5,6 +5,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Read from appsettings.json
 string mongoConnection = builder.Configuration["MongoDBSettings:ConnectionURI"]!;
+string environmentTest = builder.Configuration["EnvironmentTest"] ?? "Not Set";
+Console.WriteLine($"EnvironmentTest value from appsettings.json: {environmentTest}");
 string mongoDbName = builder.Configuration["MongoDbSettings:DatabaseName"]!;
 string sessionsCollectionName = builder.Configuration["MongoDBSettings:SessionsCollectionName"]!;
 
