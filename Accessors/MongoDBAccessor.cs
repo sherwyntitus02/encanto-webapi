@@ -12,13 +12,24 @@ namespace EncantoWebAPI.Accessors
         private readonly IMongoDatabase _database;
         private readonly MongoDBSettings _settings;
 
-        public MongoDBAccessor()
-        {
-            var config = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json")
-                .Build();
+        //public MongoDBAccessor()
+        //{
+        //    var config = new ConfigurationBuilder()
+        //        .AddJsonFile("appsettings.json")
+        //        .Build();
 
-            _settings = config.GetSection("MongoDBSettings").Get<MongoDBSettings>();
+        //    _settings = config.GetSection("MongoDBSettings").Get<MongoDBSettings>();
+
+        //    var client = new MongoClient(_settings.ConnectionURI);
+        //    _database = client.GetDatabase(_settings.DatabaseName);
+        //}
+
+        // Accept IConfiguration through the constructor
+        public MongoDBAccessor(IConfiguration config)
+        {
+            // This now uses the system-wide config (JSON + Azure Env Vars)
+            _settings = config.GetSection("MongoDBSettings").Get<MongoDBSettings>()
+                        ?? throw new Exception("MongoDBSettings section is missing!");
 
             var client = new MongoClient(_settings.ConnectionURI);
             _database = client.GetDatabase(_settings.DatabaseName);

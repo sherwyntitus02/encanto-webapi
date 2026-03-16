@@ -7,9 +7,9 @@ namespace EncantoWebAPI.Accessors
     public class AuthenticationAccessor
     {
         private readonly MongoDBAccessor _db;
-        public AuthenticationAccessor()
+        public AuthenticationAccessor(IConfiguration config)
         {
-            _db = new MongoDBAccessor();
+            _db = new MongoDBAccessor(config);
         }
 
         #region Login/Logout

@@ -6,11 +6,17 @@ namespace EncantoWebAPI.Managers
 {
     public class UserDetailsManager
     {
+        private readonly IConfiguration _config;
+
+        public UserDetailsManager(IConfiguration config)
+        {
+            _config = config;
+        }
 
         #region Profile Details
         public async Task<UserProfile> GetProfileDetailsFromUserId(string UserId)
         {
-            var userDetailsAccessor = new UserDetailsAccessor();
+            var userDetailsAccessor = new UserDetailsAccessor(_config);
             var profileDetails = await userDetailsAccessor.GetProfileDetails(UserId);
 
             if (profileDetails == null)
@@ -33,7 +39,7 @@ namespace EncantoWebAPI.Managers
 
         public async Task<UserProfile> GetProfileDetailsForEventCreationFromUserId(string UserId)
         {
-            var userDetailsAccessor = new UserDetailsAccessor();
+            var userDetailsAccessor = new UserDetailsAccessor(_config);
             var profileDetails = await userDetailsAccessor.GetProfileDetails(UserId);
 
             if (profileDetails == null)
@@ -46,7 +52,7 @@ namespace EncantoWebAPI.Managers
 
         public async Task<string> GetUserIdFromSessionDetails(string sessionKey)
         {
-            var userDetailsAccessor = new UserDetailsAccessor();
+            var userDetailsAccessor = new UserDetailsAccessor(_config);
             var sessionDetails = await userDetailsAccessor.GetSessionDetails(sessionKey);
             if (sessionDetails == null)
             {
@@ -57,25 +63,25 @@ namespace EncantoWebAPI.Managers
 
         public async Task UpdateProfileName(UserNameUpdateRequest userNameUpdateRequest)
         {
-            var userDetailsAccessor = new UserDetailsAccessor();
+            var userDetailsAccessor = new UserDetailsAccessor(_config);
             await userDetailsAccessor.UpdateProfileName(userNameUpdateRequest);
         }
 
         public async Task UpdateProfilePhn(UserPhnUpdateRequest userPhnUpdateRequest)
         {
-            var userDetailsAccessor = new UserDetailsAccessor();
+            var userDetailsAccessor = new UserDetailsAccessor(_config);
             await userDetailsAccessor.UpdateProfilePhn(userPhnUpdateRequest);
         }
 
         public async Task UpdateProfileGender(UserGenderUpdateRequest userGenderUpdateRequest)
         {
-            var userDetailsAccessor = new UserDetailsAccessor();
+            var userDetailsAccessor = new UserDetailsAccessor(_config);
             await userDetailsAccessor.UpdateProfileGender(userGenderUpdateRequest);
         }
 
         public async Task UpdateProfileBirthday(UserBirthdayUpdateRequest userBirthdayUpdateRequest)
         {
-            var userDetailsAccessor = new UserDetailsAccessor();
+            var userDetailsAccessor = new UserDetailsAccessor(_config);
             await userDetailsAccessor.UpdateProfileBirthday(userBirthdayUpdateRequest);
         }
 
@@ -85,7 +91,7 @@ namespace EncantoWebAPI.Managers
 
         public async Task UpdateProfileAddress(UserAddressUpdateRequest userAddressUpdateRequest, string? occupationId = null)
         {
-            var userDetailsAccessor = new UserDetailsAccessor();
+            var userDetailsAccessor = new UserDetailsAccessor(_config);
             var doesAddressExist = false;
 
             if (!string.IsNullOrWhiteSpace(userAddressUpdateRequest.AddressId))
@@ -132,7 +138,7 @@ namespace EncantoWebAPI.Managers
 
         public async Task UpdateProfileOccupation(UserOccupationUpdateRequest userOccupationUpdateRequest)
         {
-            var userDetailsAccessor = new UserDetailsAccessor();
+            var userDetailsAccessor = new UserDetailsAccessor(_config);
             var doesOccupationExist = false;
 
             if (!string.IsNullOrWhiteSpace(userOccupationUpdateRequest.OccupationId))
@@ -169,7 +175,7 @@ namespace EncantoWebAPI.Managers
         public async Task<string> JobLocationHandler(UserAddressUpdateRequest jobLocationRequest, string occupationId)
         {
             //since Occupation Does not exists, we create a new record in addresses collection, and return the 'addressId' to store in OccupationDetails Collection in DB
-            var userDetailsAccessor = new UserDetailsAccessor();
+            var userDetailsAccessor = new UserDetailsAccessor(_config);
             string addressId = GenerateAddressId(jobLocationRequest.AddressType, jobLocationRequest.UserId, jobLocationRequest.UpdatedTimestamp);
 
             Address userAddressDetails = new()

@@ -7,11 +7,17 @@ namespace EncantoWebAPI.Controllers
     [ApiController]
     public class UtilitiesController : ControllerBase
     {
+        private readonly IConfiguration _config;
+
+        public UtilitiesController(IConfiguration config)
+        {
+            _config = config;
+        }
 
         [HttpGet("test-db-connection")]
         public ActionResult TestDatabase()
         {
-            var mongo = new MongoDBAccessor();
+            var mongo = new MongoDBAccessor(_config);
             if (mongo.TestConnection())
             {
                 var connectionInfo = mongo.GetConnectionInfo();

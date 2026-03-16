@@ -7,6 +7,12 @@ namespace EncantoWebAPI.Managers
 {
     public class EventDetailsManager
     {
+        private readonly IConfiguration _config;
+
+        public EventDetailsManager(IConfiguration config)
+        {
+            _config = config;
+        }
 
         #region Host Event Operations
 
@@ -14,7 +20,7 @@ namespace EncantoWebAPI.Managers
         {
             var eventId = GenerateEventId(newEventRequest);
 
-            var userDetailsAccessor = new UserDetailsAccessor();
+            var userDetailsAccessor = new UserDetailsAccessor(_config);
             var hostDetails = await userDetailsAccessor.GetProfileDetails(newEventRequest.OrganizerId);
 
             if (hostDetails == null)
@@ -70,7 +76,7 @@ namespace EncantoWebAPI.Managers
                 Active = 1,
             };
 
-            var eventDetailsAccessor = new EventDetailsAccessor();
+            var eventDetailsAccessor = new EventDetailsAccessor(_config);
             await eventDetailsAccessor.CreateNewEvent(newEvent, eventFeedback);
 
             return newEvent;
@@ -87,14 +93,14 @@ namespace EncantoWebAPI.Managers
 
         public async Task<List<EventDetails>> GetMyUpcomingHostedEvents(string hostId)
         {
-            var eventDetailsAccessor = new EventDetailsAccessor();
+            var eventDetailsAccessor = new EventDetailsAccessor(_config);
             var events = await eventDetailsAccessor.GetMyUpcomingHostedEvents(hostId);
             return events;
         }
 
         public async Task<List<EventDetails>> GetMyPastHostedEvents(string hostId)
         {
-            var eventDetailsAccessor = new EventDetailsAccessor();
+            var eventDetailsAccessor = new EventDetailsAccessor(_config);
             var events = await eventDetailsAccessor.GetMyPastHostedEvents(hostId);
             return events;
         }
@@ -104,7 +110,7 @@ namespace EncantoWebAPI.Managers
             var currentTimestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
             var pendingRequests = new List<PrivateEventRequestPreview>();
-            var eventDetailsAccessor = new EventDetailsAccessor();
+            var eventDetailsAccessor = new EventDetailsAccessor(_config);
             var events = await eventDetailsAccessor.GetMyUpcomingHostedEvents(hostId);
 
             var upcomingEvents = events.Where(e => e.StartTimestamp > currentTimestamp);
@@ -142,13 +148,13 @@ namespace EncantoWebAPI.Managers
 
         public async Task UpdateEventPendingRequest(string eventId, string participantId, bool isParticipantAccepted)
         {
-            var eventDetailsAccessor = new EventDetailsAccessor();
+            var eventDetailsAccessor = new EventDetailsAccessor(_config);
             await eventDetailsAccessor.UpdateEventPendingRequest(eventId, participantId, isParticipantAccepted);
         }
 
         public async Task UpdateEventActiveStatus(string eventId, int eventStatus)
         {
-            var eventDetailsAccessor = new EventDetailsAccessor();
+            var eventDetailsAccessor = new EventDetailsAccessor(_config);
             var eventDetails = await eventDetailsAccessor.GetEventDetailsFromEventId(eventId);
 
             if (eventDetails.Active == eventStatus)
@@ -161,7 +167,7 @@ namespace EncantoWebAPI.Managers
 
         public async Task UpdateEventDetails(EditEventDetailsRequest editEventDetailsRequest)
         {
-            var eventDetailsAccessor = new EventDetailsAccessor();
+            var eventDetailsAccessor = new EventDetailsAccessor(_config);
             await eventDetailsAccessor.UpdateEventDetails(editEventDetailsRequest);
         }
 
@@ -171,15 +177,15 @@ namespace EncantoWebAPI.Managers
 
         public async Task<List<EventDetails>> GetAllUpcomingEvents()
         {
-            var eventDetailsAccessor = new EventDetailsAccessor();
+            var eventDetailsAccessor = new EventDetailsAccessor(_config);
             var events = await eventDetailsAccessor.GetAllUpcomingEvents();
             return events;
         }
 
         public async Task ApplyForUpcomingEvent(EventApplicationRequest eventApplicationRequest)
         {
-            var userDetailsManager = new Managers.UserDetailsManager();
-            var eventDetailsAccessor = new EventDetailsAccessor();
+            var userDetailsManager = new Managers.UserDetailsManager(_config);
+            var eventDetailsAccessor = new EventDetailsAccessor(_config);
 
             try
             {
@@ -252,14 +258,14 @@ namespace EncantoWebAPI.Managers
 
         public async Task<List<EventDetails>> GetMyRegisteredEvents(string guestId)
         {
-            var eventDetailsAccessor = new EventDetailsAccessor();
+            var eventDetailsAccessor = new EventDetailsAccessor(_config);
             var events = await eventDetailsAccessor.GetMyRegisteredEvents(guestId);
             return events;
         }
 
         public async Task<List<EventDetails>> GetMyPastAttendedEvents(string guestId)
         {
-            var eventDetailsAccessor = new EventDetailsAccessor();
+            var eventDetailsAccessor = new EventDetailsAccessor(_config);
             var events = await eventDetailsAccessor.GetMyPastAttendedEvents(guestId);
             return events;
         }

@@ -8,11 +8,17 @@ namespace EncantoWebAPI.Controllers
     [ApiController]
     public class UserDetailsController : ControllerBase
     {
+        private readonly IConfiguration _config;
+
+        public UserDetailsController(IConfiguration config)
+        {
+            _config = config;
+        }
 
         [HttpGet("profile/info")]
         public async Task<ActionResult<UserProfile>> GetProfileDetails()
         {
-            var userDetailsManager = new Managers.UserDetailsManager();
+            var userDetailsManager = new Managers.UserDetailsManager(_config);
 
             // Retrieve session key from context (middleware)
             var sessionKey = HttpContext.Items["SessionKey"] as string;
@@ -41,7 +47,7 @@ namespace EncantoWebAPI.Controllers
         [HttpPut("profile/update-user-name")]
         public async Task<ActionResult> UpdateProfileName([FromBody] UserNameUpdateRequest userNameUpdateRequest)
         {
-            var userDetailsManager = new Managers.UserDetailsManager();
+            var userDetailsManager = new Managers.UserDetailsManager(_config);
             try
             {
                 if (userNameUpdateRequest != null)
@@ -64,7 +70,7 @@ namespace EncantoWebAPI.Controllers
         [HttpPut("profile/update-user-phone-number")]
         public async Task<ActionResult> UpdateProfilePhn([FromBody] UserPhnUpdateRequest userPhnUpdateRequest)
         {
-            var userDetailsManager = new Managers.UserDetailsManager();
+            var userDetailsManager = new Managers.UserDetailsManager(_config);
             try
             {
                 if (userPhnUpdateRequest != null)
@@ -87,7 +93,7 @@ namespace EncantoWebAPI.Controllers
         [HttpPut("profile/update-user-gender")]
         public async Task<ActionResult> UpdateProfileGender([FromBody] UserGenderUpdateRequest userGenderUpdateRequest)
         {
-            var userDetailsManager = new Managers.UserDetailsManager();
+            var userDetailsManager = new Managers.UserDetailsManager(_config);
             try
             {
                 if (userGenderUpdateRequest != null)
@@ -110,7 +116,7 @@ namespace EncantoWebAPI.Controllers
         [HttpPut("profile/update-user-birthday")]
         public async Task<ActionResult> UpdateProfileBirthday([FromBody] UserBirthdayUpdateRequest userBirthdayUpdateRequest)
         {
-            var userDetailsManager = new Managers.UserDetailsManager();
+            var userDetailsManager = new Managers.UserDetailsManager(_config);
             try
             {
                 if (userBirthdayUpdateRequest != null)
@@ -138,7 +144,7 @@ namespace EncantoWebAPI.Controllers
         [HttpPut("profile/update-user-address")]
         public async Task<ActionResult> UpdateProfileAddress([FromBody] UserAddressUpdateRequest userAddressUpdateRequest)
         {
-            var userDetailsManager = new Managers.UserDetailsManager();
+            var userDetailsManager = new Managers.UserDetailsManager(_config);
             try
             {
                 if (userAddressUpdateRequest != null)
@@ -164,7 +170,7 @@ namespace EncantoWebAPI.Controllers
         [HttpPut("profile/update-user-occupation")]
         public async Task<ActionResult> UpdateProfileOccupation([FromBody] UserOccupationUpdateRequest userOccupationUpdateRequest)
         {
-            var userDetailsManager = new Managers.UserDetailsManager();
+            var userDetailsManager = new Managers.UserDetailsManager(_config);
             try
             {
                 if (userOccupationUpdateRequest != null)
