@@ -20,8 +20,7 @@ namespace EncantoWebAPI.Controllers
             var mongo = new MongoDBAccessor(_config);
             if (mongo.TestConnection())
             {
-                var connectionInfo = mongo.GetConnectionInfo();
-                return Ok($"✅ Connected to MongoDB!\n{connectionInfo}");
+                return Ok($"✅ Connected to MongoDB!");
             }
             return StatusCode(500, "❌ MongoDB connection failed.");
         }

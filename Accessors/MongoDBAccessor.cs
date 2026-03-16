@@ -73,10 +73,5 @@ namespace EncantoWebAPI.Accessors
             }
         }
 
-        public string GetConnectionInfo()
-        {
-            return $"Connected to: {_settings.DatabaseName} via {_settings.ConnectionURI}";
-        }
-
     }
 }
