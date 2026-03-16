@@ -9,9 +9,12 @@ namespace EncantoWebAPI.Accessors
     public class UserDetailsAccessor
     {
         private readonly MongoDBAccessor _db;
-        public UserDetailsAccessor()
+        private readonly IConfiguration _config;
+
+        public UserDetailsAccessor(IConfiguration config)
         {
-            _db = new MongoDBAccessor();
+            _config = config;
+            _db = new MongoDBAccessor(config);
         }
 
         #region Profile Details
@@ -265,7 +268,7 @@ namespace EncantoWebAPI.Accessors
             // Update work address separately if provided
             if (userOccupationUpdateRequest.JobLocation != null)
             {
-                var userDetailsManager = new UserDetailsManager();
+                var userDetailsManager = new UserDetailsManager(_config);
                 await userDetailsManager.UpdateProfileAddress(userOccupationUpdateRequest.JobLocation, userOccupationUpdateRequest.OccupationId);
 
                 updates.Add(Builders<OccupationDetails>.Update.Set(u => u.UpdatedTimestamp, userOccupationUpdateRequest.JobLocation.UpdatedTimestamp));

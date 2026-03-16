@@ -8,9 +8,9 @@ namespace EncantoWebAPI.Accessors
     {
         private readonly MongoDBAccessor _db;
 
-        public EventDetailsAccessor()
+        public EventDetailsAccessor(IConfiguration config)
         {
-            _db = new MongoDBAccessor();
+            _db = new MongoDBAccessor(config);
         }
 
         #region Host Event Operations

@@ -12,10 +12,12 @@ namespace EncantoWebAPI.Controllers
     public class EventDetailsController : ControllerBase
     {
         private readonly IHubContext<NotificationHub> _hubContext;
+        private readonly IConfiguration _config;
 
-        public EventDetailsController(IHubContext<NotificationHub> hubContext)
+        public EventDetailsController(IHubContext<NotificationHub> hubContext, IConfiguration config)
         {
             _hubContext = hubContext;
+            _config = config;
         }
 
         #region Host Event Operations
@@ -23,7 +25,7 @@ namespace EncantoWebAPI.Controllers
         [HttpPost("events/new")]
         public async Task<ActionResult> CreateNewEvent(CreateEventRequest newEventRequest)
         {
-            var eventDetailsManager = new Managers.EventDetailsManager();
+            var eventDetailsManager = new Managers.EventDetailsManager(_config);
             try
             {
                 if (newEventRequest != null)
@@ -54,7 +56,7 @@ namespace EncantoWebAPI.Controllers
         [HttpGet("events/hosted-upcoming")]
         public async Task<ActionResult<List<EventDetails>>> GetMyUpcomingHostedEvents(string hostId)
         {
-            var eventDetailsManager = new Managers.EventDetailsManager();
+            var eventDetailsManager = new Managers.EventDetailsManager(_config);
             try
             {
                 var events = await eventDetailsManager.GetMyUpcomingHostedEvents(hostId);
@@ -69,7 +71,7 @@ namespace EncantoWebAPI.Controllers
         [HttpGet("events/hosted-past")]
         public async Task<ActionResult<List<EventDetails>>> GetMyPastHostedEvents(string hostId)
         {
-            var eventDetailsManager = new Managers.EventDetailsManager();
+            var eventDetailsManager = new Managers.EventDetailsManager(_config);
             try
             {
                 var events = await eventDetailsManager.GetMyPastHostedEvents(hostId);
@@ -84,7 +86,7 @@ namespace EncantoWebAPI.Controllers
         [HttpGet("events/pending-requests")]
         public async Task<ActionResult<List<PrivateEventRequestPreview>>> GetAllPendingRequests(string hostId)
         {
-            var eventDetailsManager = new Managers.EventDetailsManager();
+            var eventDetailsManager = new Managers.EventDetailsManager(_config);
             try
             {
                 if (hostId != null)
@@ -106,7 +108,7 @@ namespace EncantoWebAPI.Controllers
         [HttpPut("events/update-pending-request")]
         public async Task<ActionResult> UpdateEventPendingRequest(string eventId, string participantId, bool isParticipantAccepted)
         {
-            var eventDetailsManager = new Managers.EventDetailsManager();
+            var eventDetailsManager = new Managers.EventDetailsManager(_config);
             try
             {
                 if (eventId != null && participantId != null)
@@ -128,7 +130,7 @@ namespace EncantoWebAPI.Controllers
         [HttpPut("events/update-event-status")]
         public async Task<ActionResult> UpdateEventActiveStatus(string eventId, int eventStatus)
         {
-            var eventDetailsManager = new Managers.EventDetailsManager();
+            var eventDetailsManager = new Managers.EventDetailsManager(_config);
             try
             {
                 if (!string.IsNullOrWhiteSpace(eventId))
@@ -150,7 +152,7 @@ namespace EncantoWebAPI.Controllers
         [HttpPut("events/update-event-details")]
         public async Task<ActionResult> UpdateEventDetails(EditEventDetailsRequest editEventDetailsRequest)
         {
-            var eventDetailsManager = new Managers.EventDetailsManager();
+            var eventDetailsManager = new Managers.EventDetailsManager(_config);
             try
             {
                 if (editEventDetailsRequest != null)
@@ -176,7 +178,7 @@ namespace EncantoWebAPI.Controllers
         [HttpGet("events/browse-upcoming")]
         public async Task<ActionResult<List<EventDetails>>> GetAllUpcomingEvents()
         {
-            var eventDetailsManager = new Managers.EventDetailsManager();
+            var eventDetailsManager = new Managers.EventDetailsManager(_config);
             try
             {
                 var events = await eventDetailsManager.GetAllUpcomingEvents();
@@ -191,7 +193,7 @@ namespace EncantoWebAPI.Controllers
         [HttpPut("events/apply")]
         public async Task<ActionResult> ApplyForUpcomingEvent([FromBody] EventApplicationRequest eventApplicationRequest)
         {
-            var eventDetailsManager = new Managers.EventDetailsManager();
+            var eventDetailsManager = new Managers.EventDetailsManager(_config);
             try
             {
                 if (eventApplicationRequest != null)
@@ -213,7 +215,7 @@ namespace EncantoWebAPI.Controllers
         [HttpGet("events/get-registered")]
         public async Task<ActionResult<List<EventDetails>>> GetMyRegisteredEvents(string guestId)
         {
-            var eventDetailsManager = new Managers.EventDetailsManager();
+            var eventDetailsManager = new Managers.EventDetailsManager(_config);
             try
             {
                 if (guestId != null)
@@ -235,7 +237,7 @@ namespace EncantoWebAPI.Controllers
         [HttpGet("events/get-past-attended")]
         public async Task<ActionResult<List<EventDetails>>> GetMyPastAttendedEvents(string guestId)
         {
-            var eventDetailsManager = new Managers.EventDetailsManager();
+            var eventDetailsManager = new Managers.EventDetailsManager(_config);
             try
             {
                 if (guestId != null)

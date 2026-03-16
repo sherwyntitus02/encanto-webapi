@@ -7,10 +7,17 @@ namespace EncantoWebAPI.Controllers
     [ApiController]
     public class AuthenticationController : ControllerBase
     {
+        private readonly IConfiguration _config;
+
+        public AuthenticationController(IConfiguration config)
+        {
+            _config = config;
+        }
+
         [HttpPost("auth/signup")]
         public async Task<ActionResult> CreateProfile([FromBody] SignupRequest signupRequest)
         {
-            var authenticationManager = new Managers.AuthenticationManager();
+            var authenticationManager = new Managers.AuthenticationManager(_config);
             try
             {
                 await authenticationManager.CreateNewUser(signupRequest);
@@ -25,7 +32,7 @@ namespace EncantoWebAPI.Controllers
         [HttpPost("auth/login")]
         public async Task<ActionResult> LoginUser([FromBody] LoginRequest loginRequest)
         {
-            var authenticationManager = new Managers.AuthenticationManager();
+            var authenticationManager = new Managers.AuthenticationManager(_config);
             try
             {
                 var userId = await authenticationManager.LoginExistingUser(loginRequest);
@@ -44,7 +51,7 @@ namespace EncantoWebAPI.Controllers
         [HttpPost("auth/logout")]
         public async Task<ActionResult> LogoutUser()
         {
-            var authenticationManager = new Managers.AuthenticationManager();
+            var authenticationManager = new Managers.AuthenticationManager(_config);
 
             // Retrieve session key from context (middleware)
             var sessionKey = HttpContext.Items["SessionKey"] as string;

@@ -9,12 +9,18 @@ namespace EncantoWebAPI.Managers
 {
     public class AuthenticationManager
     {
+        private readonly IConfiguration _config;
+
+        public AuthenticationManager(IConfiguration config)
+        {
+            _config = config;
+        }
 
         #region Signup
 
         public async Task CreateNewUser(SignupRequest signupRequest)
         {
-            var authenticationAccessor = new AuthenticationAccessor();
+            var authenticationAccessor = new AuthenticationAccessor(_config);
             var isEmailExisting = await authenticationAccessor.CheckIfEmailExists(signupRequest.Email);
 
             if (isEmailExisting) //if email already exists
@@ -124,7 +130,7 @@ namespace EncantoWebAPI.Managers
         #region Login/Logout
         public async Task<string> LoginExistingUser(LoginRequest loginRequest)
         {
-            var authenticationAccessor = new AuthenticationAccessor();
+            var authenticationAccessor = new AuthenticationAccessor(_config);
             var userId = await authenticationAccessor.LoginExistingUser(loginRequest);
 
             if (userId != null)
@@ -164,14 +170,14 @@ namespace EncantoWebAPI.Managers
                 ExpirationTimestamp = new DateTimeOffset(sessionExpiry).ToUnixTimeMilliseconds()
             };
 
-            var authenticationAccessor = new AuthenticationAccessor();
+            var authenticationAccessor = new AuthenticationAccessor(_config);
             await authenticationAccessor.StoreSessionKey(sessionDetails);
 
         }
 
         public async Task DeleteSessionKey(string sessionKey)
         {
-            var authenticationAccessor = new AuthenticationAccessor();
+            var authenticationAccessor = new AuthenticationAccessor(_config);
             await authenticationAccessor.DeleteSessionKey(sessionKey);
         }
 

@@ -1,20 +1,20 @@
 using EncantoWebAPI.Hubs;
+using EncantoWebAPI.Accessors; // Ensure this matches your namespace
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Read from appsettings.json
-string mongoConnection = builder.Configuration["MongoDBSettings:ConnectionURI"]!;
+// --- 1. CONFIGURATION & LOGGING ---
+// These will pull from appsettings.json OR Azure Environment Variables (Azure wins!)
 string environmentTest = builder.Configuration["EnvironmentTest"] ?? "Not Set";
-Console.WriteLine($"EnvironmentTest value from appsettings.json: {environmentTest}");
-string mongoDbName = builder.Configuration["MongoDbSettings:DatabaseName"]!;
-string sessionsCollectionName = builder.Configuration["MongoDBSettings:SessionsCollectionName"]!;
+Console.WriteLine($"DEBUG: Effective EnvironmentTest value: {environmentTest}");
 
-// Add services to the container.
+// --- 2. REGISTER SERVICES ---
 builder.Services.AddControllers();
-
-// Add SignalR service
 builder.Services.AddSignalR();
+
+// IMPORTANT: Register your Accessor so .NET can inject the correct Configuration into it
+builder.Services.AddSingleton<MongoDBAccessor>();
 
 builder.Services.AddCors(options =>
 {
@@ -34,21 +34,18 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Add Swagger/OpenAPI services
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
-    // Define the security scheme for session-key header
     options.AddSecurityDefinition("sessionKey", new OpenApiSecurityScheme
     {
-        Description = "Enter the session key as received from /auth/login. Example: abcdef12345",
+        Description = "Enter the session key as received from /auth/login.",
         Name = "session-key",
         In = ParameterLocation.Header,
         Type = SecuritySchemeType.ApiKey,
         Scheme = "sessionKey"
     });
 
-    // Make the session-key required for all endpoints in Swagger UI (you can override per-operation if needed)
     var securityRequirement = new OpenApiSecurityRequirement
     {
         {
@@ -59,31 +56,33 @@ builder.Services.AddSwaggerGen(options =>
             new string[] { }
         }
     };
-
     options.AddSecurityRequirement(securityRequirement);
 });
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-// Enable Swagger in ALL environments (not just Development)
+// --- 3. CONFIGURE PIPELINE ---
+
 app.UseSwagger();
 app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
+app.UseCors("AllowFrontend");
 
-app.UseCors("AllowFrontend"); // Enables CORS (before authorization & controllers)
+// --- 4. MIDDLEWARE SETUP ---
+// We pull directly from app.Configuration to ensure we have the Azure overrides
+var mongoConnection = app.Configuration["MongoDBSettings:ConnectionURI"];
+var mongoDbName = app.Configuration["MongoDBSettings:DatabaseName"];
+var sessionsCollection = app.Configuration["MongoDBSettings:SessionsCollectionName"];
 
-// Adds session validation middleware BEFORE controllers
 app.UseMiddleware<EncantoWebAPI.Middlewares.SessionValidationMiddleware>(
-    mongoConnection,
-    mongoDbName,
-    sessionsCollectionName
+    mongoConnection!,
+    mongoDbName!,
+    sessionsCollection!
 );
 
 app.UseAuthorization();
 
-// Map both Controllers and your Hub endpoint
 app.MapControllers();
 app.MapHub<NotificationHub>("/notificationHub"); // socket endpoint
 
